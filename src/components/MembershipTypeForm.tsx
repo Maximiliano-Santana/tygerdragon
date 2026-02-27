@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MembershipType } from '@/lib/types'
 import { BENEFIT_CATALOG, BENEFIT_CATEGORIES } from '@/lib/benefit-catalog'
+import { toast } from 'sonner'
 
 export default function MembershipTypeForm({ membershipType }: { membershipType?: MembershipType }) {
   const router = useRouter()
@@ -46,12 +47,14 @@ export default function MembershipTypeForm({ membershipType }: { membershipType?
         .from('membership_types')
         .update(payload)
         .eq('id', membershipType!.id)
-      if (error) { setError('Error al guardar.'); setLoading(false); return }
+      if (error) { toast.error('Error al guardar los cambios.'); setLoading(false); return }
+      toast.success('Membresía actualizada correctamente.')
     } else {
       const { error } = await supabase
         .from('membership_types')
         .insert({ ...payload, is_active: true })
-      if (error) { setError('Error al crear.'); setLoading(false); return }
+      if (error) { toast.error('Error al crear la membresía.'); setLoading(false); return }
+      toast.success('Membresía creada correctamente.')
     }
 
     router.push('/membership-types')

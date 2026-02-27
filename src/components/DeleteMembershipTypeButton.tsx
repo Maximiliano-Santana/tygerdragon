@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function DeleteMembershipTypeButton({ id }: { id: string }) {
   const [loading, setLoading] = useState(false)
@@ -12,7 +13,12 @@ export default function DeleteMembershipTypeButton({ id }: { id: string }) {
   async function handleDelete() {
     if (!confirm('¿Eliminar este tipo de membresía? Los miembros que lo tengan asignado quedarán sin tipo.')) return
     setLoading(true)
-    await supabase.from('membership_types').delete().eq('id', id)
+    const { error } = await supabase.from('membership_types').delete().eq('id', id)
+    if (error) {
+      toast.error('Error al eliminar la membresía.')
+    } else {
+      toast.success('Membresía eliminada.')
+    }
     router.refresh()
     setLoading(false)
   }

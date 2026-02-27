@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 export default function DeleteMemberButton({ memberId, memberName }: { memberId: string; memberName: string }) {
   const [loading, setLoading] = useState(false)
@@ -19,11 +20,12 @@ export default function DeleteMemberButton({ memberId, memberName }: { memberId:
       .eq('id', memberId)
 
     if (error) {
-      alert('Error al eliminar el miembro. Intenta de nuevo.')
+      toast.error('Error al eliminar el miembro. Intenta de nuevo.')
       setLoading(false)
       return
     }
 
+    toast.success(`${memberName} eliminado correctamente.`)
     router.push('/dashboard')
     router.refresh()
   }

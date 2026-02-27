@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${geist.className} bg-zinc-950 text-zinc-100 min-h-screen antialiased`}>
         {children}
+        <Toaster theme="dark" position="bottom-right" richColors />
       </body>
     </html>
   );

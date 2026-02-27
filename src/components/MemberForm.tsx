@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Member, MembershipType } from '@/lib/types'
+import { toast } from 'sonner'
 
 export default function MemberForm({
   membershipTypes,
@@ -121,7 +122,12 @@ export default function MemberForm({
         .update({ ...payload, ...(photo_url && { photo_url }) })
         .eq('id', member!.id)
 
-      if (error) { setError('Error al guardar.'); setLoading(false); return }
+      if (error) {
+        toast.error('Error al guardar los cambios.')
+        setLoading(false)
+        return
+      }
+      toast.success('Miembro actualizado correctamente.')
       router.push(`/members/${member!.id}`)
     } else {
       const { data, error } = await supabase
@@ -130,13 +136,18 @@ export default function MemberForm({
         .select('id')
         .single()
 
-      if (error || !data) { setError('Error al crear el miembro.'); setLoading(false); return }
+      if (error || !data) {
+        toast.error('Error al crear el miembro.')
+        setLoading(false)
+        return
+      }
 
       const photo_url = await uploadPhoto(data.id)
       if (photo_url) {
         await supabase.from('members').update({ photo_url }).eq('id', data.id)
       }
 
+      toast.success('Miembro creado correctamente.')
       router.push(`/members/${data.id}`)
     }
 

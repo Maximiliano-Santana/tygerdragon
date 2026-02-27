@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function DeactivateButton({
   memberId,
@@ -22,11 +23,16 @@ export default function DeactivateButton({
     if (!confirm(`¿Seguro que quieres ${action} a este miembro?`)) return
 
     setLoading(true)
-    await supabase
+    const { error } = await supabase
       .from('members')
       .update({ status: isActive ? 'inactive' : 'active' })
       .eq('id', memberId)
 
+    if (error) {
+      toast.error('Error al actualizar el estado.')
+    } else {
+      toast.success(isActive ? 'Miembro desactivado.' : 'Miembro activado.')
+    }
     router.refresh()
     setLoading(false)
   }
