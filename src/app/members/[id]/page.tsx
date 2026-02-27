@@ -65,7 +65,7 @@ export default async function MemberDetailPage({
         {/* Datos */}
         <div className="bg-zinc-900 rounded-xl border border-zinc-800 divide-y divide-zinc-800">
           {/* Teléfono con botón guardar contacto */}
-          <div className="flex items-center px-4 py-3 text-sm gap-3">
+          <div className="flex items-center px-4 py-3 text-sm">
             <span className="w-28 shrink-0 text-zinc-400">Teléfono</span>
             <span className="text-white flex-1">{member.phone ?? '—'}</span>
             {member.phone && (
