@@ -62,33 +62,49 @@ export default async function MemberDetailPage({
           </div>
         </div>
 
-        {/* Datos */}
-        <div className="bg-zinc-900 rounded-xl border border-zinc-800 divide-y divide-zinc-800">
-          {/* Teléfono con botón guardar contacto */}
-          <div className="flex items-center px-4 py-3 text-sm">
-            <span className="w-28 shrink-0 text-zinc-400">Teléfono</span>
-            <span className="text-white flex-1">{member.phone ?? '—'}</span>
-            {member.phone && (
-              <SaveContactButton
-                name={member.name}
-                phone={member.phone}
-                email={member.email}
-              />
-            )}
-          </div>
-
-          {[
-            { label: 'Email', value: member.email ?? '—' },
-            { label: 'Membresía', value: member.membership_type?.name ?? '—' },
-            { label: 'Inicio', value: new Date(member.start_date).toLocaleDateString('es-MX') },
-            { label: 'Vence', value: new Date(member.end_date).toLocaleDateString('es-MX') },
-            { label: 'Notas', value: member.notes ?? '—' },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex px-4 py-3 text-sm">
-              <span className="w-28 shrink-0 text-zinc-400">{label}</span>
-              <span className="text-white break-words min-w-0">{value}</span>
+        {/* Datos personales */}
+        <div>
+          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2 px-1">Datos personales</p>
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 divide-y divide-zinc-800">
+            <div className="flex items-center px-4 py-3 text-sm">
+              <span className="w-28 shrink-0 text-zinc-400">Teléfono</span>
+              <span className="text-white flex-1">{member.phone ?? '—'}</span>
+              {member.phone && (
+                <SaveContactButton
+                  name={member.name}
+                  phone={member.phone}
+                  email={member.email}
+                />
+              )}
             </div>
-          ))}
+            {[
+              { label: 'Email', value: member.email ?? '—' },
+              { label: 'Se unió', value: new Date(member.created_at).toLocaleDateString('es-MX') },
+              { label: 'Notas', value: member.notes ?? '—' },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex px-4 py-3 text-sm">
+                <span className="w-28 shrink-0 text-zinc-400">{label}</span>
+                <span className="text-white break-words min-w-0">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Membresía */}
+        <div>
+          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2 px-1">Membresía</p>
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 divide-y divide-zinc-800">
+            {[
+              { label: 'Plan', value: member.membership_type?.name ?? '—' },
+              { label: 'Inicio', value: new Date(member.start_date).toLocaleDateString('es-MX') },
+              { label: 'Vence', value: new Date(member.end_date).toLocaleDateString('es-MX') },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex px-4 py-3 text-sm">
+                <span className="w-28 shrink-0 text-zinc-400">{label}</span>
+                <span className="text-white break-words min-w-0">{value}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Zona de peligro — solo visible si inactivo */}
