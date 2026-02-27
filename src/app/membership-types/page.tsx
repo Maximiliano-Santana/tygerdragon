@@ -5,6 +5,7 @@ import { MembershipType } from '@/lib/types'
 import { getBenefitLabel } from '@/lib/benefit-catalog'
 import ToggleActiveButton from '@/components/ToggleActiveButton'
 import DeleteMembershipTypeButton from '@/components/DeleteMembershipTypeButton'
+import Navbar from '@/components/Navbar'
 
 export default async function MembershipTypesPage() {
   const supabase = await createClient()
@@ -18,24 +19,21 @@ export default async function MembershipTypesPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="text-zinc-400 hover:text-white text-sm transition-colors">
-            ← Dashboard
-          </Link>
-          <h2 className="text-white font-semibold">Tipos de membresía</h2>
-        </div>
-        <Link
-          href="/membership-types/new"
-          className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
-        >
-          + Nuevo tipo
-        </Link>
-      </header>
+      <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-white font-semibold text-lg">Tipos de membresía</h2>
+          <Link
+            href="/membership-types/new"
+            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            + Nuevo tipo
+          </Link>
+        </div>
+
         {!types || types.length === 0 ? (
-          <div className="text-center py-16 text-zinc-500">
+          <div className="text-center py-16 text-zinc-500 text-sm">
             No hay tipos de membresía. ¡Crea el primero!
           </div>
         ) : (
@@ -43,7 +41,7 @@ export default async function MembershipTypesPage() {
             {types.map((type: MembershipType) => (
               <div
                 key={type.id}
-                className={`bg-zinc-900 rounded-xl border p-5 flex gap-4 ${
+                className={`bg-zinc-900 rounded-xl border p-4 sm:p-5 flex gap-4 ${
                   type.is_active ? 'border-zinc-800' : 'border-zinc-800 opacity-60'
                 }`}
               >

@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import QRDisplay from '@/components/QRDisplay'
 import DeactivateButton from '@/components/DeactivateButton'
+import Navbar from '@/components/Navbar'
 
 export default async function MemberDetailPage({
   params,
@@ -30,15 +31,16 @@ export default async function MemberDetailPage({
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-zinc-800 px-6 py-4">
-        <a href="/dashboard" className="text-zinc-400 hover:text-white text-sm transition-colors">
-          ← Volver al dashboard
-        </a>
-      </header>
+      <Navbar />
 
-      <main className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {/* Volver */}
+        <Link href="/dashboard" className="inline-block text-zinc-400 hover:text-white text-sm transition-colors">
+          ← Volver al dashboard
+        </Link>
+
         {/* Header del miembro */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-white">{member.name}</h2>
             <span className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -47,7 +49,7 @@ export default async function MemberDetailPage({
               {member.status === 'inactive' ? 'Inactivo' : isExpired ? 'Vencido' : 'Activo'}
             </span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Link
               href={`/members/${member.id}/edit`}
               className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -69,8 +71,8 @@ export default async function MemberDetailPage({
             { label: 'Notas', value: member.notes ?? '—' },
           ].map(({ label, value }) => (
             <div key={label} className="flex px-4 py-3 text-sm">
-              <span className="w-28 text-zinc-400">{label}</span>
-              <span className="text-white">{value}</span>
+              <span className="w-28 shrink-0 text-zinc-400">{label}</span>
+              <span className="text-white break-words min-w-0">{value}</span>
             </div>
           ))}
         </div>
