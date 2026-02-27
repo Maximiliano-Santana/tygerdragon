@@ -5,6 +5,7 @@ import QRDisplay from '@/components/QRDisplay'
 import DeactivateButton from '@/components/DeactivateButton'
 import Navbar from '@/components/Navbar'
 import SaveContactButton from '@/components/SaveContactButton'
+import PhotoViewer from '@/components/PhotoViewer'
 import DeleteMemberButton from '@/components/DeleteMemberButton'
 
 export default async function MemberDetailPage({
@@ -46,12 +47,7 @@ export default async function MemberDetailPage({
           <div className="flex items-center gap-4">
             {/* Avatar */}
             {member.photo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={member.photo_url}
-                alt={member.name}
-                className="w-14 h-14 rounded-full object-cover border-2 border-zinc-700 shrink-0"
-              />
+              <PhotoViewer src={member.photo_url} name={member.name} />
             ) : (
               <div className="w-14 h-14 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center shrink-0">
                 <span className="text-xl font-bold text-zinc-500">
@@ -68,12 +64,16 @@ export default async function MemberDetailPage({
               </span>
             </div>
           </div>
-          <div className="flex md:flex-row flex-col gap-2 shrink-0">
+          <div className="flex gap-2 shrink-0">
             <Link
               href={`/members/${member.id}/edit`}
-              className="md:px-4 md:py-2 p-2 text-sm  bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
             >
-              Editar
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              <span className="hidden md:inline text-sm">Editar</span>
             </Link>
             <DeactivateButton memberId={member.id} currentStatus={member.status} />
           </div>
