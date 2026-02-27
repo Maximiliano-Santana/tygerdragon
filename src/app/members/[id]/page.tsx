@@ -4,6 +4,7 @@ import Link from 'next/link'
 import QRDisplay from '@/components/QRDisplay'
 import DeactivateButton from '@/components/DeactivateButton'
 import Navbar from '@/components/Navbar'
+import SaveContactButton from '@/components/SaveContactButton'
 
 export default async function MemberDetailPage({
   params,
@@ -62,8 +63,20 @@ export default async function MemberDetailPage({
 
         {/* Datos */}
         <div className="bg-zinc-900 rounded-xl border border-zinc-800 divide-y divide-zinc-800">
+          {/* Teléfono con botón guardar contacto */}
+          <div className="flex items-center px-4 py-3 text-sm gap-3">
+            <span className="w-28 shrink-0 text-zinc-400">Teléfono</span>
+            <span className="text-white flex-1">{member.phone ?? '—'}</span>
+            {member.phone && (
+              <SaveContactButton
+                name={member.name}
+                phone={member.phone}
+                email={member.email}
+              />
+            )}
+          </div>
+
           {[
-            { label: 'Teléfono', value: member.phone ?? '—' },
             { label: 'Email', value: member.email ?? '—' },
             { label: 'Membresía', value: member.membership_type?.name ?? '—' },
             { label: 'Inicio', value: new Date(member.start_date).toLocaleDateString('es-MX') },
