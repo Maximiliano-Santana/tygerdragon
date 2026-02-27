@@ -43,13 +43,30 @@ export default async function MemberDetailPage({
 
         {/* Header del miembro */}
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-base md:text-2xl font-bold text-white">{member.name}</h2>
-            <span className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-              isActive ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'
-            }`}>
-              {member.status === 'inactive' ? 'Inactivo' : isExpired ? 'Vencido' : 'Activo'}
-            </span>
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            {member.photo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={member.photo_url}
+                alt={member.name}
+                className="w-14 h-14 rounded-full object-cover border-2 border-zinc-700 shrink-0"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center shrink-0">
+                <span className="text-xl font-bold text-zinc-500">
+                  {member.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <div>
+              <h2 className="text-base md:text-2xl font-bold text-white">{member.name}</h2>
+              <span className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                isActive ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'
+              }`}>
+                {member.status === 'inactive' ? 'Inactivo' : isExpired ? 'Vencido' : 'Activo'}
+              </span>
+            </div>
           </div>
           <div className="flex md:flex-row flex-col gap-2 shrink-0">
             <Link

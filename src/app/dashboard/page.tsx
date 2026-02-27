@@ -94,6 +94,15 @@ export default async function DashboardPage({
                         href={`/members/${member.id}`}
                         className="flex items-center justify-between px-4 py-4 hover:bg-zinc-800/30 transition-colors gap-3"
                       >
+                        {/* Avatar mobile */}
+                        {member.photo_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={member.photo_url} alt={member.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
+                            <span className="text-sm font-bold text-zinc-500">{member.name.charAt(0).toUpperCase()}</span>
+                          </div>
+                        )}
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-white text-sm truncate">{member.name}</p>
                           <p className="text-xs text-zinc-500 mt-0.5">{member.membership_type?.name ?? '—'}</p>
@@ -135,7 +144,19 @@ export default async function DashboardPage({
 
                     return (
                       <tr key={member.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                        <td className="px-4 py-3 font-medium text-white">{member.name}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            {member.photo_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={member.photo_url} alt={member.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
+                                <span className="text-xs font-bold text-zinc-500">{member.name.charAt(0).toUpperCase()}</span>
+                              </div>
+                            )}
+                            <span className="font-medium text-white">{member.name}</span>
+                          </div>
+                        </td>
                         <td className="px-4 py-3 text-zinc-400">{member.membership_type?.name ?? '—'}</td>
                         <td className="px-4 py-3">
                           <span className={isExpiringSoon ? 'text-yellow-400 font-medium' : isExpired ? 'text-red-400' : 'text-zinc-400'}>

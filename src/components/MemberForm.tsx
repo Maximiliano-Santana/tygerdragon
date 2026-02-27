@@ -32,11 +32,39 @@ export default function MemberForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function compressImage(file: File): Promise<File> {
+    return new Promise((resolve) => {
+      const img = new window.Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const MAX = 400
+        let { width, height } = img
+        if (width > height) {
+          if (width > MAX) { height = Math.round(height * MAX / width); width = MAX }
+        } else {
+          if (height > MAX) { width = Math.round(width * MAX / height); height = MAX }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+        URL.revokeObjectURL(url)
+        canvas.toBlob(
+          (blob) => resolve(new File([blob!], `photo.jpg`, { type: 'image/jpeg' })),
+          'image/jpeg',
+          0.82
+        )
+      }
+      img.src = url
+    })
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setPhotoFile(file)
-    setPhotoPreview(URL.createObjectURL(file))
+    const compressed = await compressImage(file)
+    setPhotoFile(compressed)
+    setPhotoPreview(URL.createObjectURL(compressed))
   }
 
   async function uploadPhoto(memberId: string): Promise<string | null> {
@@ -155,7 +183,7 @@ export default function MemberForm({
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-1">Fecha de inicio *</label>
           <input
