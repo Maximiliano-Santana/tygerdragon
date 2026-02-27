@@ -5,6 +5,7 @@ import QRDisplay from '@/components/QRDisplay'
 import DeactivateButton from '@/components/DeactivateButton'
 import Navbar from '@/components/Navbar'
 import SaveContactButton from '@/components/SaveContactButton'
+import DeleteMemberButton from '@/components/DeleteMemberButton'
 
 export default async function MemberDetailPage({
   params,
@@ -90,10 +91,19 @@ export default async function MemberDetailPage({
           ))}
         </div>
 
+        {/* Zona de peligro — solo visible si inactivo */}
+        {member.status === 'inactive' && (
+          <div className="border border-red-500/20 rounded-xl p-4 space-y-2">
+            <p className="text-xs text-red-400/70 font-medium uppercase tracking-wide">Zona de peligro</p>
+            <p className="text-xs text-zinc-500">Al eliminar el miembro se borrará toda su información permanentemente.</p>
+            <DeleteMemberButton memberId={member.id} memberName={member.name} />
+          </div>
+        )}
+
         {/* QR */}
         <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <h3 className="text-sm font-medium text-zinc-400 mb-4">Código QR de acceso</h3>
-          <QRDisplay url={qrUrl} memberName={member.name} />
+          <QRDisplay url={qrUrl} memberName={member.name} membershipType={member.membership_type?.name} />
         </div>
       </main>
     </div>

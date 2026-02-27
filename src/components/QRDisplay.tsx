@@ -1,78 +1,164 @@
 'use client'
 
-import { QRCodeSVG } from 'qrcode.react'
+import { useRef } from 'react'
+import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react'
 
-export default function QRDisplay({ url, memberName }: { url: string; memberName: string }) {
-  async function handleShareQR() {
-    const svg = document.getElementById('qr-svg') as SVGElement | null
-    if (!svg) return
+interface Props {
+  url: string
+  memberName: string
+  membershipType?: string | null
+}
 
-    // Serializar SVG → blob URL
-    const svgStr = new XMLSerializer().serializeToString(svg)
-    const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
-    const svgUrl = URL.createObjectURL(svgBlob)
+export default function QRDisplay({ url, memberName, membershipType }: Props) {
+  const hiddenQRRef = useRef<HTMLDivElement>(null)
 
-    // Dibujar en canvas para obtener PNG
-    const img = new window.Image()
-    img.onload = async () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = 200
-      canvas.height = 200
-      const ctx = canvas.getContext('2d')!
-      ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, 200, 200)
-      ctx.drawImage(img, 0, 0)
-      URL.revokeObjectURL(svgUrl)
-
-      canvas.toBlob(async (blob) => {
-        if (!blob) return
-        const file = new File([blob], `qr-${memberName}.png`, { type: 'image/png' })
-
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `QR de acceso — ${memberName}`,
-          })
-        } else {
-          // Fallback: descargar la imagen
-          const a = document.createElement('a')
-          a.href = URL.createObjectURL(blob)
-          a.download = `qr-${memberName}.png`
-          a.click()
-        }
-      }, 'image/png')
-    }
-    img.src = svgUrl
+  function loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image()
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = src
+    })
   }
 
-  function handlePrint() {
+  async function buildCard(): Promise<Blob> {
+    const qrCanvas = hiddenQRRef.current?.querySelector('canvas') as HTMLCanvasElement
+    if (!qrCanvas) throw new Error('QR canvas not found')
+
+    const logo = await loadImage('/logo-horizontal.png')
+
+    // Dimensiones lógicas de la tarjeta
+    const scale = 3          // 3x para alta resolución
+    const W = 360
+    const PAD = 28
+    const QR_SIZE = 260
+    const LOGO_W = 150
+    const LOGO_H = Math.round((logo.naturalHeight / logo.naturalWidth) * LOGO_W)
+
+    const H =
+      4 +           // barra naranja
+      PAD +         // padding top
+      LOGO_H +      // logo
+      20 +          // gap
+      1 +           // divider
+      20 +          // gap
+      QR_SIZE +     // QR
+      24 +          // gap
+      22 +          // nombre
+      (membershipType ? 8 + 18 : 0) + // membresía (opcional)
+      20 +          // gap
+      14 +          // footer
+      PAD           // padding bottom
+
+    const canvas = document.createElement('canvas')
+    canvas.width = W * scale
+    canvas.height = H * scale
+    const ctx = canvas.getContext('2d')!
+    ctx.scale(scale, scale)
+
+    // Fondo blanco
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, W, H)
+
+    // Barra naranja top
+    ctx.fillStyle = '#f97316'
+    ctx.fillRect(0, 0, W, 4)
+
+    let y = 4 + PAD
+
+    // Logo centrado
+    ctx.drawImage(logo, (W - LOGO_W) / 2, y, LOGO_W, LOGO_H)
+    y += LOGO_H + 20
+
+    // Divider
+    ctx.fillStyle = '#eeeeee'
+    ctx.fillRect(PAD, y, W - PAD * 2, 1)
+    y += 1 + 20
+
+    // QR centrado
+    ctx.drawImage(qrCanvas, (W - QR_SIZE) / 2, y, QR_SIZE, QR_SIZE)
+    y += QR_SIZE + 24
+
+    // Nombre
+    ctx.fillStyle = '#111111'
+    ctx.font = `bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
+    ctx.textAlign = 'center'
+    ctx.fillText(memberName, W / 2, y)
+    y += 22
+
+    // Tipo de membresía
+    if (membershipType) {
+      y += 8
+      ctx.fillStyle = '#888888'
+      ctx.font = `14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
+      ctx.fillText(membershipType, W / 2, y)
+      y += 18
+    }
+
+    y += 20
+
+    // Footer
+    ctx.fillStyle = '#cccccc'
+    ctx.font = `11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
+    ctx.fillText('Escanea para verificar acceso', W / 2, y)
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))),
+        'image/png'
+      )
+    })
+  }
+
+  async function handleShareQR() {
+    const blob = await buildCard()
+    const file = new File([blob], `qr-${memberName}.png`, { type: 'image/png' })
+
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: `QR de acceso — ${memberName}` })
+    } else {
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = `qr-${memberName}.png`
+      link.click()
+    }
+  }
+
+  async function handlePrint() {
+    const blob = await buildCard()
+    const imgUrl = URL.createObjectURL(blob)
     const win = window.open('', '_blank')
     if (!win) return
     win.document.write(`
-      <html><head><title>QR - ${memberName}</title></head>
-      <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;background:#fff">
-        <h2 style="margin-bottom:16px;font-size:20px">${memberName}</h2>
-        <div id="qr">${document.getElementById('qr-container')?.innerHTML}</div>
-        <p style="margin-top:16px;color:#666;font-size:12px">Escanea para verificar acceso</p>
-        <script>window.onload=()=>window.print()</script>
-      </body></html>
+      <html>
+        <head>
+          <title>QR - ${memberName}</title>
+          <style>
+            body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f4f4f4; }
+            img { max-width: 360px; width: 100%; }
+          </style>
+        </head>
+        <body>
+          <img src="${imgUrl}" />
+          <script>window.onload = () => window.print()<\/script>
+        </body>
+      </html>
     `)
     win.document.close()
   }
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div id="qr-container" className="bg-white p-4 rounded-xl">
-        <QRCodeSVG
-          id="qr-svg"
-          value={url}
-          size={200}
-          bgColor="#ffffff"
-          fgColor="#000000"
-          level="H"
-        />
+      {/* QR oculto de alta resolución para generar la tarjeta */}
+      <div ref={hiddenQRRef} style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+        <QRCodeCanvas value={url} size={520} level="H" bgColor="#ffffff" fgColor="#000000" />
       </div>
-      <p className="text-xs text-zinc-500 break-all text-center max-w-xs">{url}</p>
+
+      {/* QR visible */}
+      <div className="bg-white p-4 rounded-xl">
+        <QRCodeSVG value={url} size={200} bgColor="#ffffff" fgColor="#000000" level="H" />
+      </div>
+
       <div className="flex gap-3">
         <button
           onClick={handleShareQR}
