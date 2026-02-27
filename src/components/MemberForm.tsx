@@ -32,6 +32,7 @@ export default function MemberForm({
   const [photoPreview, setPhotoPreview] = useState<string | null>(member?.photo_url ?? null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   function compressImage(file: File): Promise<File> {
     return new Promise((resolve) => {
@@ -81,8 +82,23 @@ export default function MemberForm({
     return `${data.publicUrl}?t=${Date.now()}`
   }
 
+  function validate() {
+    const errors: Record<string, string> = {}
+    if (!form.name.trim() || form.name.trim().length < 2)
+      errors.name = 'El nombre debe tener al menos 2 caracteres.'
+    if (form.phone && !/^\+?[\d\s\-(). ]{7,}$/.test(form.phone))
+      errors.phone = 'Ingresa un teléfono válido (mínimo 7 dígitos).'
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      errors.email = 'Ingresa un correo electrónico válido.'
+    if (form.start_date && form.end_date && form.end_date <= form.start_date)
+      errors.end_date = 'La fecha de vencimiento debe ser posterior al inicio.'
+    return errors
+  }
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { name, value } = e.target
+    // Limpia el error del campo al editar
+    if (fieldErrors[name]) setFieldErrors(prev => { const n = { ...prev }; delete n[name]; return n })
     setForm(prev => {
       const next = { ...prev, [name]: value }
       // Calcula end_date automaticamente cuando cambia tipo o start_date
@@ -102,8 +118,15 @@ export default function MemberForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError('')
+
+    const errors = validate()
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+    setFieldErrors({})
+    setLoading(true)
 
     const payload = {
       name: form.name,
@@ -173,8 +196,15 @@ export default function MemberForm({
             onChange={handleChange}
             required={f.required}
             placeholder={f.placeholder}
-            className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition-colors text-sm"
+            className={`w-full px-4 py-2.5 bg-zinc-900 border rounded-lg text-white placeholder-zinc-500 focus:outline-none transition-colors text-sm ${
+              fieldErrors[f.name]
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-zinc-700 focus:border-orange-500'
+            }`}
           />
+          {fieldErrors[f.name] && (
+            <p className="text-red-400 text-xs mt-1">{fieldErrors[f.name]}</p>
+          )}
         </div>
       ))}
 
@@ -215,8 +245,15 @@ export default function MemberForm({
             value={form.end_date}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-orange-500 transition-colors text-sm"
+            className={`w-full px-4 py-2.5 bg-zinc-900 border rounded-lg text-white focus:outline-none transition-colors text-sm ${
+              fieldErrors.end_date
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-zinc-700 focus:border-orange-500'
+            }`}
           />
+          {fieldErrors.end_date && (
+            <p className="text-red-400 text-xs mt-1">{fieldErrors.end_date}</p>
+          )}
         </div>
       </div>
 
