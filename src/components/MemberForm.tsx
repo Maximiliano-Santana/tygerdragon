@@ -27,8 +27,29 @@ export default function MemberForm({
     start_date: member?.start_date ?? today,
     end_date: member?.end_date ?? '',
   })
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(member?.photo_url ?? null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
+  async function uploadPhoto(memberId: string): Promise<string | null> {
+    if (!photoFile) return null
+    const ext = photoFile.name.split('.').pop()
+    const path = `${memberId}.${ext}`
+    const { error } = await supabase.storage
+      .from('member-photos')
+      .upload(path, photoFile, { upsert: true })
+    if (error) return null
+    const { data } = supabase.storage.from('member-photos').getPublicUrl(path)
+    return data.publicUrl
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { name, value } = e.target
@@ -65,9 +86,10 @@ export default function MemberForm({
     }
 
     if (isEditing) {
+      const photo_url = await uploadPhoto(member!.id)
       const { error } = await supabase
         .from('members')
-        .update(payload)
+        .update({ ...payload, ...(photo_url && { photo_url }) })
         .eq('id', member!.id)
 
       if (error) { setError('Error al guardar.'); setLoading(false); return }
@@ -80,6 +102,12 @@ export default function MemberForm({
         .single()
 
       if (error || !data) { setError('Error al crear el miembro.'); setLoading(false); return }
+
+      const photo_url = await uploadPhoto(data.id)
+      if (photo_url) {
+        await supabase.from('members').update({ photo_url }).eq('id', data.id)
+      }
+
       router.push(`/members/${data.id}`)
     }
 
@@ -149,6 +177,29 @@ export default function MemberForm({
             required
             className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-orange-500 transition-colors text-sm"
           />
+        </div>
+      </div>
+
+      {/* Foto */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-300 mb-1">Foto del miembro</label>
+        <div className="flex items-center gap-4">
+          {photoPreview && (
+            <img
+              src={photoPreview}
+              alt="Preview"
+              className="w-16 h-16 rounded-full object-cover border-2 border-zinc-700"
+            />
+          )}
+          <label className="flex-1 flex items-center justify-center px-4 py-2.5 bg-zinc-900 border border-zinc-700 border-dashed rounded-lg text-zinc-400 hover:border-orange-500 hover:text-orange-400 cursor-pointer transition-colors text-sm">
+            <span>{photoPreview ? 'Cambiar foto' : 'Subir foto'}</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+          </label>
         </div>
       </div>
 
