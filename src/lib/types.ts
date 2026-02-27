@@ -3,6 +3,7 @@ export type MembershipType = {
   name: string
   duration_days: number
   price: number | null
+  benefits: string[]
   is_active: boolean
   created_at: string
 }

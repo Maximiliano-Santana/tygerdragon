@@ -40,7 +40,13 @@ export default async function DashboardPage({
     <div className="min-h-screen">
       {/* Header */}
       <header className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">TygerDragon</h1>
+        <div className="flex items-center gap-6">
+          <h1 className="text-xl font-bold text-white">TygerDragon</h1>
+          <nav className="flex items-center gap-4">
+            <Link href="/dashboard" className="text-sm text-orange-400 font-medium">Miembros</Link>
+            <Link href="/membership-types" className="text-sm text-zinc-400 hover:text-white transition-colors">Membresías</Link>
+          </nav>
+        </div>
         <LogoutButton />
       </header>
 
