@@ -12,7 +12,7 @@ export default async function MembershipTypesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: types } = await supabase
+  const { data: types, error } = await supabase
     .from('membership_types')
     .select('*')
     .order('duration_days')
@@ -32,7 +32,12 @@ export default async function MembershipTypesPage() {
           </Link>
         </div>
 
-        {!types || types.length === 0 ? (
+        {error ? (
+          <div className="text-center py-16 space-y-2">
+            <p className="text-red-400 text-sm">Error al cargar las membresías.</p>
+            <a href="/membership-types" className="text-orange-400 hover:text-orange-300 text-xs underline">Reintentar</a>
+          </div>
+        ) : !types || types.length === 0 ? (
           <div className="text-center py-16 text-zinc-500 text-sm">
             No hay tipos de membresía. ¡Crea el primero!
           </div>

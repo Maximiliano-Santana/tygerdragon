@@ -42,7 +42,7 @@ export default async function DashboardPage({
     query = query.eq('status', 'inactive')
   }
 
-  const { data: members, count } = await query
+  const { data: members, count, error } = await query
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   // Query independiente para vencimientos próximos (sin paginación)
@@ -93,7 +93,12 @@ export default async function DashboardPage({
 
         {/* Lista de miembros */}
         <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
-          {!members || members.length === 0 ? (
+          {error ? (
+            <div className="text-center py-16 space-y-2">
+              <p className="text-red-400 text-sm">Error al cargar los miembros.</p>
+              <a href="/dashboard" className="text-orange-400 hover:text-orange-300 text-xs underline">Reintentar</a>
+            </div>
+          ) : !members || members.length === 0 ? (
             <div className="text-center py-16 text-zinc-500 text-sm">
               {q ? 'No se encontraron miembros con ese nombre.' : 'No hay miembros aún. ¡Agrega el primero!'}
             </div>
