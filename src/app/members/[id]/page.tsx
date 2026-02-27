@@ -44,17 +44,17 @@ export default async function MemberDetailPage({
         {/* Header del miembro */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-white">{member.name}</h2>
+            <h2 className="text-base md:text-2xl font-bold text-white">{member.name}</h2>
             <span className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
               isActive ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'
             }`}>
               {member.status === 'inactive' ? 'Inactivo' : isExpired ? 'Vencido' : 'Activo'}
             </span>
           </div>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex md:flex-row flex-col gap-2 shrink-0">
             <Link
               href={`/members/${member.id}/edit`}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="md:px-4 md:py-2 p-2 text-sm  bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
             >
               Editar
             </Link>

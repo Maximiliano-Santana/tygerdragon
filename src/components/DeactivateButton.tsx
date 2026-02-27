@@ -35,7 +35,7 @@ export default function DeactivateButton({
     <button
       onClick={handleToggle}
       disabled={loading}
-      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${
+      className={`md:px-4 md:py-2 p-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${
         isActive
           ? 'bg-red-500/15 text-red-400 hover:bg-red-500/25'
           : 'bg-green-500/15 text-green-400 hover:bg-green-500/25'
