@@ -21,8 +21,16 @@ export default async function DashboardPage({
     .select('*, membership_type:membership_types(id, name, duration_days)')
     .order('name')
 
+  const todayStr = new Date().toISOString().split('T')[0]
+
   if (q) query = query.ilike('name', `%${q}%`)
-  if (status && status !== 'all') query = query.eq('status', status)
+  if (status === 'active') {
+    query = query.eq('status', 'active').gte('end_date', todayStr)
+  } else if (status === 'expired') {
+    query = query.eq('status', 'active').lt('end_date', todayStr)
+  } else if (status === 'inactive') {
+    query = query.eq('status', 'inactive')
+  }
 
   const { data: members } = await query
 

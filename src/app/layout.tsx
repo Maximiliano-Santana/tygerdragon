@@ -7,6 +7,9 @@ const geist = Geist({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "TygerDragon",
   description: "Gestión de membresías",
+  icons: {
+    icon: "/tygerdragon.ico",
+  },
 };
 
 export default function RootLayout({

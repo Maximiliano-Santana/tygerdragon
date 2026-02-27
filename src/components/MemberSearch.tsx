@@ -36,6 +36,7 @@ export default function MemberSearch({
       >
         <option value="all">Todos</option>
         <option value="active">Activos</option>
+        <option value="expired">Vencidos</option>
         <option value="inactive">Inactivos</option>
       </select>
     </div>

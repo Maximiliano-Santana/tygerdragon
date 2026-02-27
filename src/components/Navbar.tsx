@@ -31,8 +31,9 @@ export default function Navbar() {
     <>
       <header className="border-b border-zinc-800 px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="text-xl font-bold text-white">
-            TygerDragon
+          <Link href="/dashboard">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-horizontal.png" alt="TygerDragon" className="h-9 w-auto" />
           </Link>
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-4">
@@ -90,7 +91,8 @@ export default function Navbar() {
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-          <span className="text-white font-bold text-lg">TygerDragon</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-horizontal.png" alt="TygerDragon" className="h-8 w-auto" />
           <button
             onClick={() => setOpen(false)}
             className="p-2 -mr-2 text-zinc-400 hover:text-white transition-colors"
