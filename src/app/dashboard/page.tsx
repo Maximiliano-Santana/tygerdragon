@@ -5,23 +5,33 @@ import { Member, MembershipType } from '@/lib/types'
 import Navbar from '@/components/Navbar'
 import MemberSearch from '@/components/MemberSearch'
 
+const PAGE_SIZE = 20
+
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string }>
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { q, status } = await searchParams
-
-  let query = supabase
-    .from('members')
-    .select('*, membership_type:membership_types(id, name, duration_days)')
-    .order('name')
+  const { q, status, page: pageParam } = await searchParams
+  const page = Math.max(1, Number(pageParam ?? 1))
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
 
   const todayStr = new Date().toISOString().split('T')[0]
+  const today = new Date()
+  const in7days = new Date(today)
+  in7days.setDate(today.getDate() + 7)
+
+  // Query paginada
+  let query = supabase
+    .from('members')
+    .select('*, membership_type:membership_types(id, name, duration_days)', { count: 'exact' })
+    .order('name')
+    .range(from, to)
 
   if (q) query = query.ilike('name', `%${q}%`)
   if (status === 'active') {
@@ -32,17 +42,25 @@ export default async function DashboardPage({
     query = query.eq('status', 'inactive')
   }
 
-  const { data: members } = await query
+  const { data: members, count } = await query
+  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
-  // Miembros por vencer en los próximos 7 días
-  const today = new Date()
-  const in7days = new Date(today)
-  in7days.setDate(today.getDate() + 7)
+  // Query independiente para vencimientos próximos (sin paginación)
+  const { data: expiringSoon } = await supabase
+    .from('members')
+    .select('id, name')
+    .eq('status', 'active')
+    .gte('end_date', todayStr)
+    .lte('end_date', in7days.toISOString().split('T')[0])
 
-  const expiringSoon = (members ?? []).filter(m => {
-    const end = new Date(m.end_date)
-    return end >= today && end <= in7days && m.status === 'active'
-  })
+  // Helper para construir URLs de paginación conservando filtros
+  function pageUrl(p: number) {
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    if (status) params.set('status', status)
+    params.set('page', String(p))
+    return `/dashboard?${params.toString()}`
+  }
 
   return (
     <div className="min-h-screen">
@@ -51,13 +69,13 @@ export default async function DashboardPage({
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5">
 
         {/* Alerta vencimientos */}
-        {expiringSoon.length > 0 && (
+        {(expiringSoon?.length ?? 0) > 0 && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-3 flex items-start gap-3">
             <span className="text-yellow-400 text-lg mt-0.5 shrink-0">⚠</span>
             <p className="text-yellow-300 text-sm">
-              <span className="font-semibold">{expiringSoon.length} membresía{expiringSoon.length > 1 ? 's' : ''}</span>
-              {' '}vence{expiringSoon.length > 1 ? 'n' : ''} en los próximos 7 días:{' '}
-              {expiringSoon.map(m => m.name).join(', ')}
+              <span className="font-semibold">{expiringSoon!.length} membresía{expiringSoon!.length > 1 ? 's' : ''}</span>
+              {' '}vence{expiringSoon!.length > 1 ? 'n' : ''} en los próximos 7 días:{' '}
+              {expiringSoon!.map(m => m.name).join(', ')}
             </p>
           </div>
         )}
@@ -85,7 +103,7 @@ export default async function DashboardPage({
               <ul className="md:hidden divide-y divide-zinc-800">
                 {members.map((member: Member & { membership_type: MembershipType | null }) => {
                   const isExpired = new Date(member.end_date) < today
-                  const isExpiringSoon = expiringSoon.some(m => m.id === member.id)
+                  const isExpiringSoon = expiringSoon?.some(m => m.id === member.id)
                   const isActive = member.status === 'active' && !isExpired
 
                   return (
@@ -94,7 +112,6 @@ export default async function DashboardPage({
                         href={`/members/${member.id}`}
                         className="flex items-center justify-between px-4 py-4 hover:bg-zinc-800/30 transition-colors gap-3"
                       >
-                        {/* Avatar mobile */}
                         {member.photo_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={member.photo_url} alt={member.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
@@ -112,9 +129,7 @@ export default async function DashboardPage({
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                            isActive
-                              ? 'bg-green-500/15 text-green-400'
-                              : 'bg-red-500/15 text-red-400'
+                            isActive ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'
                           }`}>
                             {member.status === 'inactive' ? 'Inactivo' : isExpired ? 'Vencido' : 'Activo'}
                           </span>
@@ -140,7 +155,7 @@ export default async function DashboardPage({
                 <tbody>
                   {members.map((member: Member & { membership_type: MembershipType | null }) => {
                     const isExpired = new Date(member.end_date) < today
-                    const isExpiringSoon = expiringSoon.some(m => m.id === member.id)
+                    const isExpiringSoon = expiringSoon?.some(m => m.id === member.id)
 
                     return (
                       <tr key={member.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
@@ -173,10 +188,7 @@ export default async function DashboardPage({
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <Link
-                            href={`/members/${member.id}`}
-                            className="text-orange-400 hover:text-orange-300 text-xs font-medium"
-                          >
+                          <Link href={`/members/${member.id}`} className="text-orange-400 hover:text-orange-300 text-xs font-medium">
                             Ver →
                           </Link>
                         </td>
@@ -188,6 +200,45 @@ export default async function DashboardPage({
             </>
           )}
         </div>
+
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs text-zinc-500">
+              Mostrando {from + 1}–{Math.min(to + 1, count ?? 0)} de {count} miembros
+            </p>
+            <div className="flex items-center gap-2">
+              {page > 1 ? (
+                <Link
+                  href={pageUrl(page - 1)}
+                  className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium rounded-lg transition-colors"
+                >
+                  ← Anterior
+                </Link>
+              ) : (
+                <span className="px-3 py-1.5 bg-zinc-800/40 text-zinc-600 text-xs font-medium rounded-lg cursor-not-allowed">
+                  ← Anterior
+                </span>
+              )}
+              <span className="text-xs text-zinc-400 px-1">
+                {page} / {totalPages}
+              </span>
+              {page < totalPages ? (
+                <Link
+                  href={pageUrl(page + 1)}
+                  className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium rounded-lg transition-colors"
+                >
+                  Siguiente →
+                </Link>
+              ) : (
+                <span className="px-3 py-1.5 bg-zinc-800/40 text-zinc-600 text-xs font-medium rounded-lg cursor-not-allowed">
+                  Siguiente →
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   )

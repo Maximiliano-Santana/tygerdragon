@@ -38,7 +38,8 @@ export default function MemberForm({
       const url = URL.createObjectURL(file)
       img.onload = () => {
         const MAX = 400
-        let { width, height } = img
+        let width = img.naturalWidth
+        let height = img.naturalHeight
         if (width > height) {
           if (width > MAX) { height = Math.round(height * MAX / width); width = MAX }
         } else {
@@ -76,7 +77,7 @@ export default function MemberForm({
       .upload(path, photoFile, { upsert: true })
     if (error) return null
     const { data } = supabase.storage.from('member-photos').getPublicUrl(path)
-    return data.publicUrl
+    return `${data.publicUrl}?t=${Date.now()}`
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {

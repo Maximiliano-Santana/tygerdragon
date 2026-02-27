@@ -17,6 +17,7 @@ export default function MemberSearch({
     const params = new URLSearchParams()
     if (q) params.set('q', q)
     if (status && status !== 'all') params.set('status', status)
+    // siempre vuelve a página 1 al buscar/filtrar
     router.push(`${pathname}?${params.toString()}`)
   }, [router, pathname])
 
