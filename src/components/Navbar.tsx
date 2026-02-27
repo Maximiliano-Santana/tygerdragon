@@ -23,7 +23,7 @@ export default function Navbar() {
   }
 
   function isActive(href: string) {
-    if (href === '/dashboard') return pathname === '/dashboard' || pathname.startsWith('/members')
+    if (href === '/dashboard') return pathname === '/dashboard' || pathname === '/members' || pathname.startsWith('/members/')
     return pathname.startsWith(href)
   }
 
