@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { MembershipType } from '@/lib/types'
 import { getBenefitLabel } from '@/lib/benefit-catalog'
 import ToggleActiveButton from '@/components/ToggleActiveButton'
+import DeleteMembershipTypeButton from '@/components/DeleteMembershipTypeButton'
 
 export default async function MembershipTypesPage() {
   const supabase = await createClient()
@@ -89,6 +90,7 @@ export default async function MembershipTypesPage() {
                     table="membership_types"
                     isActive={type.is_active}
                   />
+                  <DeleteMembershipTypeButton id={type.id} />
                 </div>
               </div>
             ))}
