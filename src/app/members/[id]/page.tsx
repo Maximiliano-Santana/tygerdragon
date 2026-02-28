@@ -7,6 +7,8 @@ import Navbar from '@/components/Navbar'
 import SaveContactButton from '@/components/SaveContactButton'
 import PhotoViewer from '@/components/PhotoViewer'
 import DeleteMemberButton from '@/components/DeleteMemberButton'
+import RenewButton from '@/components/RenewButton'
+import CancelSubscriptionButton from '@/components/CancelSubscriptionButton'
 
 export default async function MemberDetailPage({
   params,
@@ -122,6 +124,12 @@ export default async function MemberDetailPage({
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Acciones de membresía */}
+        <div className="flex gap-2">
+          <RenewButton memberId={member.id} durationDays={member.membership_type?.duration_days} />
+          <CancelSubscriptionButton memberId={member.id} memberName={member.name} />
         </div>
 
         {/* Zona de peligro — solo visible si inactivo */}
