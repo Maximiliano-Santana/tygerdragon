@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
+import QRScannerButton from './QRScannerButton'
 
 export default function MemberSearch({
   defaultValue,
@@ -42,6 +43,7 @@ export default function MemberSearch({
         placeholder="Buscar por nombre..."
         className="flex-1 px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition-colors text-sm"
       />
+      <QRScannerButton />
       <select
         value={status}
         onChange={e => handleStatus(e.target.value)}
